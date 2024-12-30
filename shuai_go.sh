@@ -48,7 +48,7 @@ while true; do
             # Check if target is a domain or IP address
             if is_domain "$target_ip"; then
                 # If it's a domain, resolve to IP
-                target_ip_resolved=$(dig +short "$target_ip")
+                target_ip_resolved=$(dig +short "$target_ip" | head -n 1)  # Only take the first resolved IP
                 if [ -z "$target_ip_resolved" ]; then
                     echo "无法解析域名 $target_ip"
                     continue
