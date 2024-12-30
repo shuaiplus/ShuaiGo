@@ -12,6 +12,16 @@ show_rules() {
     fi
 }
 
+# Function to check if the target is a domain
+is_domain() {
+    # Check if the target contains a dot, indicating it's likely a domain
+    if [[ "$1" =~ \. ]]; then
+        return 0  # It's a domain
+    else
+        return 1  # It's an IP address
+    fi
+}
+
 # Main menu
 while true; do
     clear
@@ -34,6 +44,19 @@ while true; do
             read target_ip
             echo "请输入目标端口："
             read target_port
+
+            # Check if target is a domain or IP address
+            if is_domain "$target_ip"; then
+                # If it's a domain, resolve to IP
+                target_ip_resolved=$(dig +short "$target_ip")
+                if [ -z "$target_ip_resolved" ]; then
+                    echo "无法解析域名 $target_ip"
+                    continue
+                else
+                    target_ip=$target_ip_resolved
+                    echo "域名 $target_ip 解析为 IP 地址 $target_ip"
+                fi
+            fi
 
             # Add port forwarding rule using iptables
             sudo iptables -t nat -A PREROUTING -p tcp --dport "$local_port" -j DNAT --to-destination "$target_ip":"$target_port"
